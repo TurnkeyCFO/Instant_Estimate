@@ -69,6 +69,21 @@ body::after {
   filter:blur(18px);
   pointer-events:none;
 }
+.cursor-glow {
+  position: fixed;
+  width: 280px;
+  height: 280px;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .22;
+  background: radial-gradient(circle, rgba(4,120,87,.22) 0%, rgba(16,185,129,.12) 28%, rgba(4,120,87,0) 72%);
+  filter: blur(26px);
+  transform: translate3d(-50%, -50%, 0);
+  transition: opacity .18s ease;
+}
 .hero { text-align:center; padding:10px 0 24px; }
 .logo-wrap {
   display:flex;
@@ -156,7 +171,11 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
 .card-option label span { color: rgba(0,38,58,.68); font-size:13px; line-height:1.45; }
 .options.industry-grid .card-option label { min-height:72px; display:flex; align-items:center; justify-content:center; text-align:center; }
 .options.industry-grid .card-option label strong { margin-bottom:0; }
-.card-option input:checked + label { border-color: rgba(4,120,87,.82); box-shadow: 0 0 0 4px rgba(4,120,87,.10); transform: translateY(-1px); }
+.card-option input:checked + label {
+  border-color: rgba(4,120,87,.92);
+  box-shadow: 0 0 0 4px rgba(4,120,87,.12), 0 0 22px rgba(4,120,87,.16);
+  transform: translateY(-1px);
+}
 .card-option label:hover { border-color: rgba(4,47,69,.22); transform: translateY(-1px); }
 .field { margin-bottom:18px; }
 .field label.title { display:block; font-weight:800; font-size:15px; margin-bottom:10px; }
@@ -206,6 +225,7 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
 </style>
 </head>
 <body>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
   <div class="shell">
     <section class="hero">
       <div class="logo-wrap"><img alt="Turnkey CFO" src="./assets/tk-logo.png" /></div>
@@ -370,7 +390,7 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
 
             <div class="form-step" data-step="5">
               <h2>One last detail before we reveal your estimate.</h2>
-              <p class="lead">Enter your email and weâ€™ll surface your custom estimate on the next screen.</p>
+              <p class="lead">Enter your email and we'll surface your custom estimate on the next screen.</p>
               <div class="field">
                 <label class="title" for="email">Email address</label>
                 <input class="input" id="email" name="email" type="email" placeholder="you@company.com" required />
@@ -448,7 +468,20 @@ const restartBtn = document.getElementById('restartBtn');
 const industryInputs = document.querySelectorAll('input[name="industry"]');
 const jobCostWrap = document.getElementById('jobCostWrap');
 const otherIndustryWrap = document.getElementById('otherIndustryWrap');
+const cursorGlow = document.getElementById('cursorGlow');
 let currentStep = 0;
+
+if (cursorGlow) {
+  window.addEventListener('mousemove', (e) => {
+    cursorGlow.style.transform = `translate3d(${e.clientX - 140}px, ${e.clientY - 140}px, 0)`;
+  });
+  window.addEventListener('mouseleave', () => {
+    cursorGlow.style.opacity = '.08';
+  });
+  window.addEventListener('mouseenter', () => {
+    cursorGlow.style.opacity = '.22';
+  });
+}
 
 function activeSteps() {
   const software = document.getElementById('software')?.value;
