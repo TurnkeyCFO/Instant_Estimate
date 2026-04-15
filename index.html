@@ -182,6 +182,10 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
 .input, select { width:100%; appearance:none; border:1px solid rgba(0,38,58,.12); border-radius:16px; padding:16px 15px; font-size:15px; color:var(--navy); background:#fff; outline:none; transition:.18s ease; }
 .input:focus, select:focus { border-color: rgba(4,120,87,.85); box-shadow:0 0 0 4px rgba(4,120,87,.10); }
 .helper { margin-top:8px; color: rgba(0,38,58,.56); font-size:12px; }
+.helper.status { min-height: 18px; }
+.helper.status.ok { color: var(--green); }
+.helper.status.warn { color: #b45309; }
+.helper.status.error { color: #b91c1c; }
 .row-2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
 .nav { display:flex; justify-content:space-between; gap:12px; margin-top:26px; }
 .btn { border:none; border-radius:16px; padding:16px 20px; font-size:15px; font-weight:800; cursor:pointer; transition:.18s ease; }
@@ -394,6 +398,7 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
               <div class="field">
                 <label class="title" for="email">Email address</label>
                 <input class="input" id="email" name="email" type="email" placeholder="you@company.com" required />
+                <div class="helper status" id="submissionStatus"></div>
               </div>
             </div>
 
@@ -469,7 +474,8 @@ const industryInputs = document.querySelectorAll('input[name="industry"]');
 const jobCostWrap = document.getElementById('jobCostWrap');
 const otherIndustryWrap = document.getElementById('otherIndustryWrap');
 const cursorGlow = document.getElementById('cursorGlow');
-const WEBHOOK_URL = '';
+const submissionStatus = document.getElementById('submissionStatus');
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby3WTNHSphNeqvrSBYyFilCvP2hYRV8YCCpSgLOCThC6PheZ2hflDtLUTUmgOxBCoPT/exec';
 let currentStep = 0;
 
 if (cursorGlow) {
@@ -559,6 +565,12 @@ document.getElementById('software').addEventListener('change', () => {
 
 function money(n) {
   return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+}
+
+function setSubmissionStatus(message, tone = '') {
+  if (!submissionStatus) return;
+  submissionStatus.textContent = message || '';
+  submissionStatus.className = `helper status${tone ? ` ${tone}` : ''}`;
 }
 
 function getIndustryLabel(data) {
@@ -662,11 +674,14 @@ function buildSubmissionPayload(data, result) {
 
 async function submitLead(payload) {
   if (!WEBHOOK_URL) {
-    console.warn('Instant Estimate webhook URL is not configured.');
-    return;
+    const message = 'Lead capture is not configured yet. Add your Apps Script /exec URL in WEBHOOK_URL.';
+    setSubmissionStatus(message, 'warn');
+    throw new Error(message);
   }
 
-  await fetch(WEBHOOK_URL, {
+  setSubmissionStatus('Saving your estimate details...', 'warn');
+
+  const response = await fetch(WEBHOOK_URL, {
     method: 'POST',
     mode: 'no-cors',
     headers: {
@@ -675,6 +690,9 @@ async function submitLead(payload) {
     body: JSON.stringify(payload),
     keepalive: true
   });
+
+  setSubmissionStatus('Estimate details sent to your capture sheet.', 'ok');
+  return response;
 }
 
 function calculateEstimate(data) {
@@ -722,6 +740,7 @@ form.addEventListener('submit', (e) => {
     alert('Please complete this step before seeing your estimate.');
     return;
   }
+  setSubmissionStatus('');
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
   data.advisory_budgeting = fd.get('advisory_budgeting') === 'yes';
@@ -783,11 +802,14 @@ form.addEventListener('submit', (e) => {
 
   submitLead(submissionPayload).catch((error) => {
     console.error('Instant Estimate webhook submission failed.', error);
+    if (!WEBHOOK_URL) return;
+    setSubmissionStatus('We showed the estimate, but the sheet capture failed. Confirm the deployed Apps Script /exec URL and redeploy the web app.', 'error');
   });
 });
 
 restartBtn.addEventListener('click', () => {
   form.reset();
+  setSubmissionStatus('');
   currentStep = 0;
   updateJobCostVisibility();
   renderStep();
