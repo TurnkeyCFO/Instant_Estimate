@@ -469,6 +469,7 @@ const industryInputs = document.querySelectorAll('input[name="industry"]');
 const jobCostWrap = document.getElementById('jobCostWrap');
 const otherIndustryWrap = document.getElementById('otherIndustryWrap');
 const cursorGlow = document.getElementById('cursorGlow');
+const WEBHOOK_URL = '';
 let currentStep = 0;
 
 if (cursorGlow) {
@@ -560,6 +561,122 @@ function money(n) {
   return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 }
 
+function getIndustryLabel(data) {
+  const selectedIndustryEl = document.querySelector('input[name="industry"]:checked + label strong');
+  const defaultIndustry = selectedIndustryEl ? selectedIndustryEl.textContent : 'Other';
+  if (data.industry === 'other' && data.otherIndustryName?.trim()) return data.otherIndustryName.trim();
+  return defaultIndustry;
+}
+
+function getSoftwareLabel(data) {
+  if (data.software === 'quickbooks') return 'QuickBooks';
+  if (data.software === 'xero') return 'Xero';
+  if (data.software === 'zoho') return 'Zoho Books';
+  return data.otherSoftwareName?.trim() || 'Other';
+}
+
+function getRevenueLabel(value) {
+  return value === 'lt250' ? 'Under $250k'
+    : value === '250to1m' ? '$250k to $1M'
+    : value === '1to3m' ? '$1M to $3M'
+    : '$3M+';
+}
+
+function getAccountLabel(value) {
+  return value === 'le5' ? '5 or fewer financial accounts'
+    : value === '6to10' ? '6 to 10 financial accounts'
+    : '11+ financial accounts';
+}
+
+function getPayrollLabel(value) {
+  return { none: 'No payroll', simple: 'Simple payroll', complex: 'Payroll +' }[value] || 'Unknown';
+}
+
+function getBillpayLabel(value) {
+  return {
+    none: 'No bill pay support',
+    lt40: 'Under 40 bills/month',
+    '40to100': '40 to 100 bills/month',
+    gt100: '100+ bills/month'
+  }[value] || 'Unknown';
+}
+
+function getCleanupLabel(value) {
+  return parseInt(value, 10) > 0
+    ? `${value === '7' ? '7+' : value} month(s) behind`
+    : 'Current books / no cleanup indicated';
+}
+
+function getAdvisorySelections(data) {
+  const advisorySelections = [];
+  if (data.advisory_budgeting) advisorySelections.push('Budgeting');
+  if (data.advisory_forecasting) advisorySelections.push('Forecasting');
+  if (data.advisory_kpi) advisorySelections.push('KPI dashboarding');
+  if (data.advisory_ma) advisorySelections.push('M&A');
+  if (data.advisory_exit) advisorySelections.push('Exit planning');
+  if (data.advisory_capital) advisorySelections.push('Capital strategy');
+  if (data.advisory_other) advisorySelections.push('Other CFO advisory');
+  return advisorySelections;
+}
+
+function buildSubmissionPayload(data, result) {
+  const advisorySelections = getAdvisorySelections(data);
+  return {
+    timestamp: new Date().toISOString(),
+    email: data.email || '',
+    companyName: data.companyName || '',
+    industry: data.industry || '',
+    industryLabel: getIndustryLabel(data),
+    otherIndustryName: data.otherIndustryName?.trim() || '',
+    revenue: data.revenue || '',
+    revenueLabel: getRevenueLabel(data.revenue),
+    software: data.software || '',
+    softwareLabel: getSoftwareLabel(data),
+    otherSoftwareName: data.otherSoftwareName?.trim() || '',
+    accountCount: data.accountCount || '',
+    accountCountLabel: getAccountLabel(data.accountCount),
+    inventory: data.inventory || '',
+    jobCosting: data.jobCosting || 'no',
+    payroll: data.payroll || '',
+    payrollLabel: getPayrollLabel(data.payroll),
+    billpay: data.billpay || '',
+    billpayLabel: getBillpayLabel(data.billpay),
+    advisory: advisorySelections.join(', '),
+    advisorySelections,
+    advisory_budgeting: data.advisory_budgeting,
+    advisory_forecasting: data.advisory_forecasting,
+    advisory_kpi: data.advisory_kpi,
+    advisory_ma: data.advisory_ma,
+    advisory_exit: data.advisory_exit,
+    advisory_capital: data.advisory_capital,
+    advisory_other: data.advisory_other,
+    monthsBehind: data.monthsBehind || '0',
+    monthsBehindLabel: getCleanupLabel(data.monthsBehind),
+    monthlyLow: result.low,
+    monthlyHigh: result.high,
+    cleanupEstimate: result.cleanup,
+    complexityFlags: result.flags.join(', '),
+    reviewStatus: result.flags.length ? 'Review suggested' : 'Looks standard'
+  };
+}
+
+async function submitLead(payload) {
+  if (!WEBHOOK_URL) {
+    console.warn('Instant Estimate webhook URL is not configured.');
+    return;
+  }
+
+  await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(payload),
+    keepalive: true
+  });
+}
+
 function calculateEstimate(data) {
   let monthly = 300;
   const flags = [];
@@ -629,38 +746,30 @@ form.addEventListener('submit', (e) => {
     reviewSub.textContent = 'No major complexity flags were triggered by your responses.';
   }
 
-  let industryLabel = 'Other';
-  const selectedIndustryEl = document.querySelector('input[name="industry"]:checked + label strong');
-  if (selectedIndustryEl) industryLabel = selectedIndustryEl.textContent;
-  const payrollLabel = { none:'no payroll support', simple:'simple payroll', complex:'Payroll +' }[data.payroll];
-  const billLabel = { none:'no bill pay support', lt40:'bill pay under 40 bills/month', '40to100':'bill pay for 40 to 100 bills/month', gt100:'bill pay above 100 bills/month' }[data.billpay];
-  const advisorySelections = [];
-  if (data.advisory_budgeting) advisorySelections.push('Budgeting');
-  if (data.advisory_forecasting) advisorySelections.push('Forecasting');
-  if (data.advisory_kpi) advisorySelections.push('KPI dashboarding');
-  if (data.advisory_ma) advisorySelections.push('M&A');
-  if (data.advisory_exit) advisorySelections.push('Exit planning');
-  if (data.advisory_capital) advisorySelections.push('Capital strategy');
-  if (data.advisory_other) advisorySelections.push('Other CFO advisory');
+  const industryLabel = getIndustryLabel(data);
+  const payrollLabel = getPayrollLabel(data.payroll).toLowerCase();
+  const billLabel = {
+    none: 'no bill pay support',
+    lt40: 'bill pay under 40 bills/month',
+    '40to100': 'bill pay for 40 to 100 bills/month',
+    gt100: 'bill pay above 100 bills/month'
+  }[data.billpay];
+  const advisorySelections = getAdvisorySelections(data);
+  const submissionPayload = buildSubmissionPayload(data, result);
 
   document.getElementById('narrative').textContent = `Based on your inputs, this estimate combines a $300 bookkeeping base with added services and light complexity adjustments. The result is a monthly range plus a separate cleanup estimate.`;
   const estimateSummary = document.getElementById('estimateSummary');
-  const revenueLabel = data.revenue === 'lt250' ? 'Under $250k' : data.revenue === '250to1m' ? '$250k to $1M' : data.revenue === '1to3m' ? '$1M to $3M' : '$3M+';
-  const accountLabel = data.accountCount === 'le5' ? '5 or fewer financial accounts' : data.accountCount === '6to10' ? '6 to 10 financial accounts' : '11+ financial accounts';
-  const cleanupLabel = parseInt(data.monthsBehind, 10) > 0 ? `${data.monthsBehind === '7' ? '7+' : data.monthsBehind} month(s) behind` : 'Current books / no cleanup indicated';
-  const softwareLabel = data.software === 'quickbooks' ? 'QuickBooks' : data.software === 'xero' ? 'Xero' : data.software === 'zoho' ? 'Zoho Books' : (data.otherSoftwareName?.trim() || 'Other');
-  const displayIndustry = (document.getElementById('otherIndustryName')?.value.trim() && document.getElementById('ind-other').checked) ? document.getElementById('otherIndustryName').value.trim() : industryLabel;
   const summaryItems = [
     `Company name: ${data.companyName}`,
-    `Industry: ${displayIndustry}`,
-    `Annual revenue: ${revenueLabel}`,
-    `Accounting software: ${softwareLabel}`,
-    `Complexity: ${accountLabel}`,
+    `Industry: ${industryLabel}`,
+    `Annual revenue: ${submissionPayload.revenueLabel}`,
+    `Accounting software: ${submissionPayload.softwareLabel}`,
+    `Complexity: ${submissionPayload.accountCountLabel}`,
     `Inventory tracking: ${data.inventory === 'yes' ? 'Yes' : 'No'}`,
     `Payroll support: ${payrollLabel}`,
     `Bill pay / AP: ${billLabel}`,
     `CFO advisory interest: ${advisorySelections.length ? advisorySelections.join(', ') : 'None selected'}`,
-    `Cleanup status: ${cleanupLabel}`
+    `Cleanup status: ${submissionPayload.monthsBehindLabel}`
   ];
   if (data.industry === 'construction') {
     summaryItems.splice(9, 0, `Job costing: ${data.jobCosting === 'yes' ? 'Yes' : 'No'}`);
@@ -671,6 +780,10 @@ form.addEventListener('submit', (e) => {
   formTopbar.classList.add('hidden');
   resultWrap.classList.add('active');
   resultWrap.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  submitLead(submissionPayload).catch((error) => {
+    console.error('Instant Estimate webhook submission failed.', error);
+  });
 });
 
 restartBtn.addEventListener('click', () => {
@@ -689,4 +802,5 @@ renderStep();
 </script>
 </body>
 </html>
+
 
