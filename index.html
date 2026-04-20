@@ -215,6 +215,44 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
 .note ul { padding-left:18px; }
 .cta-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
 .footer-mini { text-align:center; color: rgba(0,38,58,.58); font-size:12px; padding:18px 12px 0; }
+.tier-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; margin:22px 0 26px; align-items: stretch; }
+.tier-grid.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.tier-card { position:relative; display:flex; flex-direction:column; padding:24px; border-radius:24px; background:#fff; border:1px solid rgba(0,38,58,.10); box-shadow:0 10px 24px rgba(4,47,69,.06); transition: transform .18s ease, box-shadow .18s ease; }
+.tier-card.recommended {
+  border-color: rgba(4,120,87,.55);
+  box-shadow: 0 0 0 4px rgba(4,120,87,.12), 0 18px 44px rgba(4,120,87,.22), 0 0 38px rgba(4,120,87,.18);
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, rgba(4,120,87,.06), #fff 38%);
+}
+.tier-card.custom { border-style: dashed; border-color: rgba(0,38,58,.20); background: linear-gradient(180deg, rgba(0,38,58,.04), #fff 42%); }
+.tier-card.custom.recommended { border-style: solid; }
+.tier-badge { position:absolute; top:-12px; left:24px; padding:6px 12px; border-radius:999px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; background: linear-gradient(135deg, var(--green), var(--green-deep)); color:#fff; box-shadow: 0 6px 14px rgba(4,120,87,.28); }
+.tier-name { font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--navy-soft); font-weight:800; margin-bottom:8px; }
+.tier-price { font-size:clamp(22px,2.6vw,28px); font-weight:800; letter-spacing:-.03em; color:var(--navy); margin-bottom:4px; }
+.tier-price .per { font-size:13px; font-weight:600; color:var(--navy-soft); letter-spacing:0; margin-left:4px; }
+.tier-price.custom-price { font-size:22px; color: var(--green); letter-spacing:-.02em; }
+.tier-tagline { font-size:13px; color:rgba(0,38,58,.68); margin-bottom:16px; line-height:1.5; min-height:38px; }
+.tier-section-label { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--navy-soft); font-weight:800; margin:14px 0 8px; padding-top:12px; border-top:1px dashed rgba(0,38,58,.12); }
+.tier-section-label:first-of-type { padding-top:0; border-top:none; margin-top:0; }
+.tier-list { list-style:none; padding:0; margin:0 0 4px; }
+.tier-list li { position:relative; padding:4px 0 4px 22px; font-size:13.5px; line-height:1.5; color:var(--navy); }
+.tier-list li::before { content:""; position:absolute; left:2px; top:11px; width:10px; height:10px; border-radius:50%; background: rgba(4,120,87,.14); }
+.tier-list li::after { content:""; position:absolute; left:5px; top:13px; width:4px; height:6px; border-right:2px solid var(--green); border-bottom:2px solid var(--green); transform: rotate(45deg); }
+.tier-list.addons li::before { background: rgba(0,38,58,.08); }
+.tier-list.addons li::after { border-color: var(--navy-soft); }
+.tier-list li.disabled { color: rgba(0,38,58,.38); text-decoration: line-through; }
+.tier-list li.disabled::before { background: rgba(0,38,58,.06); }
+.tier-list li.disabled::after { border-color: rgba(0,38,58,.28); }
+.tier-cta { margin-top:auto; padding-top:18px; }
+.tier-cta .btn { width:100%; padding:14px 18px; font-size:14px; border-radius:14px; }
+.tier-no-addons { font-size:12.5px; color:rgba(0,38,58,.50); font-style:italic; padding:4px 0; }
+.result-card-grid.secondary { grid-template-columns: repeat(2, minmax(0,1fr)); }
+@media (max-width: 1040px) {
+  .tier-grid, .tier-grid.four { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 640px) {
+  .tier-grid, .tier-grid.four, .result-card-grid.secondary { grid-template-columns: 1fr; }
+}
 @media (max-width: 860px) {
   .note-box, .result-card-grid { grid-template-columns: 1fr; }
 }
@@ -345,9 +383,9 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
                   <label class="title" for="billpay">Bill pay / AP support</label>
                   <select id="billpay" name="billpay" required>
                     <option value="none">No</option>
-                    <option value="lt40">Yes â€” under 40 bills/month</option>
-                    <option value="40to100">Yes â€” 40 to 100 bills/month</option>
-                    <option value="gt100">Yes â€” 100+ bills/month</option>
+                    <option value="lt40">Yes &mdash; under 40 bills/month</option>
+                    <option value="40to100">Yes &mdash; 40 to 100 bills/month</option>
+                    <option value="gt100">Yes &mdash; 100+ bills/month</option>
                   </select>
                 </div>
                 <div class="field construction-only hidden" id="jobCostWrap">
@@ -358,19 +396,21 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
                   </select>
                 </div>
               </div>
-              <div class="field">
-                <label class="title">Would you like to explore broader CFO advisory support?</label>
-                <div class="toggle-group">
-                  <div class="card-option"><input type="checkbox" name="advisory_budgeting" id="advisory_budgeting" value="yes"><label for="advisory_budgeting"><strong>Budgeting</strong><span>Planning support and budget development.</span></label></div>
-                  <div class="card-option"><input type="checkbox" name="advisory_forecasting" id="advisory_forecasting" value="yes"><label for="advisory_forecasting"><strong>Forecasting</strong><span>Cash flow or forward-looking planning.</span></label></div>
-                  <div class="card-option"><input type="checkbox" name="advisory_kpi" id="advisory_kpi" value="yes"><label for="advisory_kpi"><strong>KPI dashboarding</strong><span>Metrics, dashboards, and performance visibility.</span></label></div>
-                  <div class="card-option"><input type="checkbox" name="advisory_ma" id="advisory_ma" value="yes"><label for="advisory_ma"><strong>M&amp;A</strong><span>Transaction readiness or deal support.</span></label></div>
-                  <div class="card-option"><input type="checkbox" name="advisory_exit" id="advisory_exit" value="yes"><label for="advisory_exit"><strong>Exit planning</strong><span>Positioning for a future sale or transition.</span></label></div>
-                  <div class="card-option"><input type="checkbox" name="advisory_capital" id="advisory_capital" value="yes"><label for="advisory_capital"><strong>Capital strategy</strong><span>Debt, equity, fundraising, or capital structure.</span></label></div>
-                  <div class="card-option"><input type="checkbox" name="advisory_other" id="advisory_other" value="yes"><label for="advisory_other"><strong>Other CFO advisory</strong><span>Additional strategic finance support.</span></label></div>
+              <div class="row-2">
+                <div class="field">
+                  <label class="title" for="needs1099">Do you issue 1099s to contractors?</label>
+                  <select id="needs1099" name="needs1099" required>
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                  </select>
                 </div>
               </div>
-            </div>
+              <div class="field">
+                <label class="title">Interested in custom CFO-level services?</label>
+                <div class="toggle-group">
+                  <div class="card-option"><input type="checkbox" name="cfoInterest" id="cfoInterest" value="yes"><label for="cfoInterest"><strong>Yes &mdash; tell me about CFO services</strong><span>We're bookkeeping-first. This unlocks a custom-quoted CFO scope for the rare business that needs it.</span></label></div>
+                </div>
+              </div>
             </div>
 
             <div class="form-step" data-step="4">
@@ -415,17 +455,14 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
         <div class="result-head">
           <div>
             <div class="eyebrow" style="margin-bottom:12px;">Your estimate is ready</div>
-            <h2>Here's your projected range.</h2>
-            <p id="narrative">Based on your inputs, this is the estimated range for recurring monthly support plus a separate cleanup estimate.</p>
+            <h2>Choose the plan that fits.</h2>
+            <p id="narrative">Based on your inputs, here's what each tier would look like for your business. One plan is highlighted as our recommendation.</p>
           </div>
         </div>
 
-        <div class="result-card-grid">
-          <div class="result-card highlight">
-            <div class="k">Monthly services</div>
-            <div class="v" id="monthlyRange">$0 - $0</div>
-            <div class="s">Your projected recurring monthly range based on the services and complexity selected.</div>
-          </div>
+        <div class="tier-grid" id="tierGrid"></div>
+
+        <div class="result-card-grid secondary">
           <div class="result-card">
             <div class="k">Cleanup estimate</div>
             <div class="v" id="cleanupFee">$0</div>
@@ -455,7 +492,7 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
       </section>
     </section>
 
-    <div class="footer-mini">Turnkey CFO â€” estimate ranges are directional and subject to final review.</div>
+    <div class="footer-mini">Turnkey CFO &mdash; estimate ranges are directional and subject to final review.</div>
   </div>
 
 <script>
@@ -619,20 +656,28 @@ function getCleanupLabel(value) {
     : 'Current books / no cleanup indicated';
 }
 
-function getAdvisorySelections(data) {
-  const advisorySelections = [];
-  if (data.advisory_budgeting) advisorySelections.push('Budgeting');
-  if (data.advisory_forecasting) advisorySelections.push('Forecasting');
-  if (data.advisory_kpi) advisorySelections.push('KPI dashboarding');
-  if (data.advisory_ma) advisorySelections.push('M&A');
-  if (data.advisory_exit) advisorySelections.push('Exit planning');
-  if (data.advisory_capital) advisorySelections.push('Capital strategy');
-  if (data.advisory_other) advisorySelections.push('Other CFO advisory');
-  return advisorySelections;
+function getAttachedAddOns(data) {
+  const addOns = [];
+  if (data.payroll === 'simple') addOns.push('Payroll (Simple)');
+  else if (data.payroll === 'complex') addOns.push('Payroll (Multi-state / Complex)');
+  if (data.needs1099 === 'yes') addOns.push('1099 Module');
+  if (data.billpay === 'lt40') addOns.push('Bill Pay (under 40/mo)');
+  else if (data.billpay === '40to100') addOns.push('Bill Pay (40-100/mo)');
+  else if (data.billpay === 'gt100') addOns.push('Bill Pay (100+/mo)');
+  return addOns;
 }
 
+const TIER_LABELS = {
+  books: 'Books',
+  reporting: 'Books + Reporting',
+  strategic: 'Strategic Partnership',
+  cfo: 'CFO Services'
+};
+
+function fmtRange(r) { return `${money(r.low)} - ${money(r.high)}`; }
+
 function buildSubmissionPayload(data, result) {
-  const advisorySelections = getAdvisorySelections(data);
+  const attachedAddOns = getAttachedAddOns(data);
   return {
     timestamp: new Date().toISOString(),
     email: data.email || '',
@@ -653,23 +698,152 @@ function buildSubmissionPayload(data, result) {
     payrollLabel: getPayrollLabel(data.payroll),
     billpay: data.billpay || '',
     billpayLabel: getBillpayLabel(data.billpay),
-    advisory: advisorySelections.join(', '),
-    advisorySelections,
-    advisory_budgeting: data.advisory_budgeting,
-    advisory_forecasting: data.advisory_forecasting,
-    advisory_kpi: data.advisory_kpi,
-    advisory_ma: data.advisory_ma,
-    advisory_exit: data.advisory_exit,
-    advisory_capital: data.advisory_capital,
-    advisory_other: data.advisory_other,
+    needs1099: data.needs1099 === 'yes',
+    cfoInterest: !!result.cfoInterest,
+    recommendedTier: TIER_LABELS[result.recommended],
+    attachedAddOns: attachedAddOns.join(', '),
+    booksRange: fmtRange(result.tiers.books),
+    reportingRange: fmtRange(result.tiers.reporting),
+    strategicRange: fmtRange(result.tiers.strategic),
+    cfoTierPrice: result.cfoInterest ? 'Custom quote' : '',
+    tierCoreMonthly: result.core,
+    tierFloor: result.floor,
     monthsBehind: data.monthsBehind || '0',
     monthsBehindLabel: getCleanupLabel(data.monthsBehind),
-    monthlyLow: result.low,
-    monthlyHigh: result.high,
     cleanupEstimate: result.cleanup,
     complexityFlags: result.flags.join(', '),
     reviewStatus: result.flags.length ? 'Review suggested' : 'Looks standard'
   };
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderTierCards(result) {
+  const grid = document.getElementById('tierGrid');
+  const showCfo = result.cfoInterest;
+  grid.classList.toggle('four', showCfo);
+  grid.innerHTML = '';
+
+  const attachedAddOns = [];
+  if (result.addOns.payroll === 'simple') attachedAddOns.push('Payroll (Simple)');
+  else if (result.addOns.payroll === 'complex') attachedAddOns.push('Payroll (Multi-state / Complex)');
+  if (result.addOns.needs1099) attachedAddOns.push('1099 Module');
+  const billPayLabel = ({ lt40: 'Bill Pay (under 40/mo)', '40to100': 'Bill Pay (40-100/mo)', gt100: 'Bill Pay (100+/mo)' })[result.addOns.billpay];
+
+  const booksCore = [
+    'Monthly bookkeeping',
+    'Bank &amp; credit card reconciliations',
+    'Month-end close',
+    'P&amp;L and Balance Sheet PDFs'
+  ];
+  const reportingCore = [
+    'Everything in Books',
+    'Dedicated client portal',
+    'Live financial dashboard',
+    'PDF financials as backup'
+  ];
+  const strategicCore = [
+    'Everything in Books + Reporting',
+    'Monthly Loom video breakdown',
+    '1 optional 30-min call per month'
+  ];
+  const cfoCore = [
+    'Custom-scoped CFO support',
+    'Tailored to your business after a discovery call',
+    'Pricing set based on scope'
+  ];
+
+  const tierDefs = [
+    {
+      key: 'books',
+      name: 'Books',
+      tagline: 'Accurate monthly books without added complexity.',
+      price: fmtRange(result.tiers.books),
+      core: booksCore,
+      addOns: (() => {
+        const out = attachedAddOns.slice();
+        if (billPayLabel) out.push({ text: billPayLabel, disabled: true, note: '(requires Books + Reporting)' });
+        return out;
+      })(),
+      ctaLabel: 'Select Books'
+    },
+    {
+      key: 'reporting',
+      name: 'Books + Reporting',
+      tagline: 'Accurate books plus live financial visibility each month.',
+      price: fmtRange(result.tiers.reporting),
+      core: reportingCore,
+      addOns: (() => {
+        const out = attachedAddOns.slice();
+        if (billPayLabel) out.push(billPayLabel);
+        return out;
+      })(),
+      ctaLabel: 'Select Books + Reporting'
+    },
+    {
+      key: 'strategic',
+      name: 'Strategic Partnership',
+      tagline: 'Premium bookkeeping with Ricky\u2019s interpretation each month.',
+      price: fmtRange(result.tiers.strategic),
+      core: strategicCore,
+      addOns: (() => {
+        const out = attachedAddOns.slice();
+        if (billPayLabel) out.push(billPayLabel);
+        return out;
+      })(),
+      ctaLabel: 'Select Strategic Partnership'
+    }
+  ];
+
+  if (showCfo) {
+    tierDefs.push({
+      key: 'cfo',
+      name: 'CFO Services',
+      tagline: 'Custom-scoped CFO support for businesses that need strategic finance.',
+      price: null,
+      core: cfoCore,
+      addOns: [],
+      ctaLabel: 'Book a discovery call',
+      custom: true
+    });
+  }
+
+  tierDefs.forEach(def => {
+    const isRec = def.key === result.recommended;
+    const card = document.createElement('div');
+    card.className = 'tier-card' + (isRec ? ' recommended' : '') + (def.custom ? ' custom' : '');
+
+    let html = '';
+    if (isRec) html += '<div class="tier-badge">Recommended</div>';
+    html += `<div class="tier-name">${escapeHtml(def.name)}</div>`;
+    html += def.price
+      ? `<div class="tier-price">${def.price}<span class="per">/ month</span></div>`
+      : `<div class="tier-price custom-price">Custom quote</div>`;
+    html += `<div class="tier-tagline">${def.tagline}</div>`;
+    html += `<div class="tier-section-label">What's included</div>`;
+    html += `<ul class="tier-list">${def.core.map(i => `<li>${i}</li>`).join('')}</ul>`;
+
+    if (!def.custom) {
+      html += `<div class="tier-section-label">Your add-ons</div>`;
+      if (def.addOns.length) {
+        html += `<ul class="tier-list addons">` + def.addOns.map(a => {
+          if (typeof a === 'string') return `<li>${escapeHtml(a)}</li>`;
+          return `<li class="disabled">${escapeHtml(a.text)}${a.note ? ' <em style="font-style:italic;color:rgba(0,38,58,.5);font-size:12px;">' + escapeHtml(a.note) + '</em>' : ''}</li>`;
+        }).join('') + `</ul>`;
+      } else {
+        html += `<div class="tier-no-addons">No add-ons selected</div>`;
+      }
+    }
+
+    const ctaClass = isRec ? 'btn accent' : 'btn secondary';
+    const ctaHref = 'https://calendly.com/ricky-turnkeycfo/15min-intro-call';
+    html += `<div class="tier-cta"><a class="${ctaClass}" href="${ctaHref}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">${escapeHtml(def.ctaLabel)}</a></div>`;
+
+    card.innerHTML = html;
+    grid.appendChild(card);
+  });
 }
 
 async function submitLead(payload) {
@@ -696,42 +870,93 @@ async function submitLead(payload) {
 }
 
 function calculateEstimate(data) {
-  let monthly = 300;
   const flags = [];
 
-  const revenueAdj = { lt250: -50, '250to1m': 0, '1to3m': 150, gt3m: 300 }[data.revenue] || 0;
-  monthly += revenueAdj;
+  // Core bookkeeping price (non-add-on complexity only)
+  let core = 300;
+  core += { lt250: -50, '250to1m': 0, '1to3m': 150, gt3m: 300 }[data.revenue] || 0;
+  core += { le5: 0, '6to10': 50, gt10: 100 }[data.accountCount] || 0;
+  core += { other: 0, church: -100, construction: 100 }[data.industry] || 0;
+  if (data.industry === 'construction' && data.jobCosting === 'yes') core += 50;
+  core += 50; // base workflow overhead
 
-  const accountAdj = { le5: 0, '6to10': 50, gt10: 100 }[data.accountCount] || 0;
-  monthly += accountAdj;
-
-  const industryAdj = { other: 0, church: -100, construction: 100 }[data.industry] || 0;
-  monthly += industryAdj;
-
+  // Add-on effort folded into tier price (not shown as line items)
   const payrollAdj = { none: 0, simple: 100, complex: 300 }[data.payroll] || 0;
-  monthly += payrollAdj;
-
   const billAdj = { none: 0, lt40: 100, '40to100': 250, gt100: 350 }[data.billpay] || 0;
-  monthly += billAdj;
-  if (data.industry === 'construction' && data.jobCosting === 'yes') monthly += 50;
+  const tenNinetyNineAdj = data.needs1099 === 'yes' ? 25 : 0;
+  const addOnsCost = payrollAdj + billAdj + tenNinetyNineAdj;
 
-  monthly += 50;
-  monthly = Math.max(350, monthly);
-  const low = Math.max(350, monthly - 75);
-  const high = Math.max(monthly + 75, low + 150);
+  // Minimum-tier floor: $200 if truly minimal, else $350
+  const isMinimalClient = (
+    data.revenue === 'lt250' &&
+    data.accountCount === 'le5' &&
+    data.payroll === 'none' &&
+    data.billpay === 'none' &&
+    data.needs1099 !== 'yes' &&
+    data.inventory !== 'yes' &&
+    !(data.industry === 'construction' && data.jobCosting === 'yes')
+  );
+  const floor = isMinimalClient ? 200 : 350;
 
+  // Input-driven tier deltas (scale with core complexity)
+  const brDelta  = core <= 450 ? 125 : core <= 700 ? 175 : 250;
+  const spDelta  = core <= 450 ? 350 : core <= 700 ? 500 : 700;
+
+  const books     = Math.max(floor, core + addOnsCost);
+  const reporting = books + brDelta;
+  const strategic = reporting + spDelta;
+
+  const rangeOf = (mid) => {
+    const low = Math.max(floor, mid - 75);
+    const high = Math.max(mid + 75, low + 150);
+    return { mid, low, high };
+  };
+
+  const tiers = {
+    books:     rangeOf(books),
+    reporting: rangeOf(reporting),
+    strategic: rangeOf(strategic)
+  };
+
+  // Cleanup estimate anchored to Books+Reporting monthly (standard delivery level)
   let cleanup = 0;
   const monthsBehind = parseInt(data.monthsBehind, 10) || 0;
   if (monthsBehind > 0) {
     const mult = monthsBehind >= 6 ? 0.4 : 0.5;
-    cleanup = monthly * mult * monthsBehind;
+    cleanup = tiers.reporting.mid * mult * monthsBehind;
   }
 
   if (data.software === 'other') flags.push('non-standard accounting software');
   if (data.inventory === 'yes') flags.push('inventory tracking');
   if (monthsBehind >= 6) flags.push('6+ months of cleanup');
 
-  return { monthly, low, high, cleanup, flags };
+  // Recommendation logic
+  const cfoInterest = !!data.cfoInterest;
+  let recommended;
+  if (cfoInterest) {
+    recommended = 'cfo';
+  } else {
+    const hasAddOn = data.payroll !== 'none' || data.billpay !== 'none' || data.needs1099 === 'yes';
+    const bigRev = data.revenue === '1to3m' || data.revenue === 'gt3m';
+    if (hasAddOn || bigRev || data.inventory === 'yes') {
+      recommended = 'reporting';
+    } else {
+      recommended = 'books';
+    }
+  }
+
+  // Bill pay gates Books tier out of recommendation eligibility
+  const billPayBlocksBooks = data.billpay !== 'none';
+
+  return {
+    core, floor, tiers, cleanup, flags,
+    cfoInterest, recommended, billPayBlocksBooks,
+    addOns: {
+      payroll: data.payroll,
+      billpay: data.billpay,
+      needs1099: data.needs1099 === 'yes'
+    }
+  };
 }
 
 form.addEventListener('submit', (e) => {
@@ -743,16 +968,11 @@ form.addEventListener('submit', (e) => {
   setSubmissionStatus('');
   const fd = new FormData(form);
   const data = Object.fromEntries(fd.entries());
-  data.advisory_budgeting = fd.get('advisory_budgeting') === 'yes';
-  data.advisory_forecasting = fd.get('advisory_forecasting') === 'yes';
-  data.advisory_kpi = fd.get('advisory_kpi') === 'yes';
-  data.advisory_ma = fd.get('advisory_ma') === 'yes';
-  data.advisory_exit = fd.get('advisory_exit') === 'yes';
-  data.advisory_capital = fd.get('advisory_capital') === 'yes';
-  data.advisory_other = fd.get('advisory_other') === 'yes';
+  data.cfoInterest = fd.get('cfoInterest') === 'yes';
   const result = calculateEstimate(data);
 
-  document.getElementById('monthlyRange').textContent = `${money(result.low)} - ${money(result.high)}`;
+  renderTierCards(result);
+
   document.getElementById('cleanupFee').textContent = result.cleanup > 0 ? money(result.cleanup) : 'None implied';
 
   const reviewStatus = document.getElementById('reviewStatus');
@@ -773,10 +993,17 @@ form.addEventListener('submit', (e) => {
     '40to100': 'bill pay for 40 to 100 bills/month',
     gt100: 'bill pay above 100 bills/month'
   }[data.billpay];
-  const advisorySelections = getAdvisorySelections(data);
+  const attachedAddOns = getAttachedAddOns(data);
   const submissionPayload = buildSubmissionPayload(data, result);
 
-  document.getElementById('narrative').textContent = `Based on your inputs, this estimate combines a $300 bookkeeping base with added services and light complexity adjustments. The result is a monthly range plus a separate cleanup estimate.`;
+  const recCopy = {
+    books: 'Books is the simplest fit for your setup.',
+    reporting: 'Books + Reporting pairs accurate books with live visibility.',
+    strategic: 'Strategic Partnership adds a monthly Loom and optional call on top of full reporting.',
+    cfo: 'Because you\u2019re interested in CFO-level services, we\u2019ve surfaced a custom tier as our recommendation.'
+  }[result.recommended];
+  document.getElementById('narrative').textContent = `Based on your inputs, here's how each plan would look for your business. ${recCopy} You'll see which one is recommended below.`;
+
   const estimateSummary = document.getElementById('estimateSummary');
   const summaryItems = [
     `Company name: ${data.companyName}`,
@@ -787,7 +1014,10 @@ form.addEventListener('submit', (e) => {
     `Inventory tracking: ${data.inventory === 'yes' ? 'Yes' : 'No'}`,
     `Payroll support: ${payrollLabel}`,
     `Bill pay / AP: ${billLabel}`,
-    `CFO advisory interest: ${advisorySelections.length ? advisorySelections.join(', ') : 'None selected'}`,
+    `1099 contractors: ${data.needs1099 === 'yes' ? 'Yes' : 'No'}`,
+    `CFO interest: ${result.cfoInterest ? 'Yes \u2014 custom tier surfaced' : 'No'}`,
+    `Add-ons attached: ${attachedAddOns.length ? attachedAddOns.join(', ') : 'None'}`,
+    `Recommended tier: ${TIER_LABELS[result.recommended]}`,
     `Cleanup status: ${submissionPayload.monthsBehindLabel}`
   ];
   if (data.industry === 'construction') {
