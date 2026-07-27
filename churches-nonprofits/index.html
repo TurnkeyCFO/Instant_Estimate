@@ -439,16 +439,6 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
               <p class="lead">A few simple inputs help us estimate how much hands-on management your books will need each month.</p>
               <div class="row-2">
                 <div class="field">
-                  <label class="title" for="accountCount">Total bank + credit card accounts</label>
-                  <select id="accountCount" name="accountCount" required>
-                    <option value="le5">5 or fewer</option>
-                    <option value="6to10">6 - 10</option>
-                    <option value="gt10">11+</option>
-                  </select>
-                </div>
-              </div>
-              <div class="row-2">
-                <div class="field">
                   <label class="title" for="restrictedFunds">Restricted fund tracking?</label>
                   <select id="restrictedFunds" name="restrictedFunds" required>
                     <option value="no">No &mdash; general fund only</option>
@@ -763,6 +753,8 @@ function getRevenueLabel(value) {
 }
 
 function getAccountLabel(value) {
+  /* an unasked question must never read as "11+ accounts" */
+  if (value == null || value === '') return 'Not asked';
   return value === 'le5' ? '5 or fewer financial accounts'
     : value === '6to10' ? '6 to 10 financial accounts'
     : '11+ financial accounts';
@@ -1327,7 +1319,7 @@ form.addEventListener('submit', (e) => {
     `Organization type: ${industryLabel}`,
     `Annual revenue: ${submissionPayload.revenueLabel}`,
     `Accounting software: ${submissionPayload.softwareLabel}`,
-    `Complexity: ${submissionPayload.accountCountLabel}`,
+    ...(data.accountCount ? [`Complexity: ${submissionPayload.accountCountLabel}`] : []),
     `Restricted fund tracking: ${data.restrictedFunds === 'yes' ? 'Yes' : 'No'}`,
     `Payroll support: ${payrollLabel}`,
     ...(billLabel ? [`Bill pay / AP: ${billLabel}`] : []),
