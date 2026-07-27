@@ -408,7 +408,7 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
               </div>
               <div class="row-2">
                 <div class="field">
-                  <label class="title" for="revenue">Estimated annual revenue / budget</label>
+                  <label class="title" for="revenue">Estimated annual income</label>
                   <input id="revenue" name="revenue" type="text" inputmode="decimal" placeholder="750,000" autocomplete="off" required>
                   <div class="money-echo" id="me-revenue"></div>
                 </div>
@@ -864,7 +864,7 @@ function escapeHtml(s) {
 const RV_STEPS = [
   'Reading your answers',
   'Sizing your finance function',
-  'Pricing against your revenue',
+  'Pricing against your income',
   'Building your estimate'
 ];
 
@@ -1226,7 +1226,7 @@ function calculateEstimate(data) {
     const n = parseMoney(inp.value);
     if (!n) { out.textContent = ''; out.classList.remove('on'); return; }
     out.textContent = n < PRICING.minRevenue
-      ? 'That reads as ' + fmt(n) + ' per year. Enter your full annual revenue.'
+      ? 'That reads as ' + fmt(n) + ' per year. Enter your full annual income.'
       : 'We read that as ' + fmt(n) + ' per year.';
     out.classList.add('on');
   };
@@ -1317,7 +1317,7 @@ form.addEventListener('submit', (e) => {
   const summaryItems = [
     `Company name: ${data.companyName}`,
     `Organization type: ${industryLabel}`,
-    `Annual revenue: ${submissionPayload.revenueLabel}`,
+    `Annual income: ${submissionPayload.revenueLabel}`,
     `Accounting software: ${submissionPayload.softwareLabel}`,
     ...(data.accountCount ? [`Complexity: ${submissionPayload.accountCountLabel}`] : []),
     `Restricted fund tracking: ${data.restrictedFunds === 'yes' ? 'Yes' : 'No'}`,
