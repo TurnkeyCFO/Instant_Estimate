@@ -471,17 +471,6 @@ h1 { margin:0 auto 10px; max-width:740px; font-size:clamp(34px, 5vw, 56px); line
               </div>
               <div class="row-2">
                 <div class="field">
-                  <label class="title" for="billpay">Bill pay / AP support</label>
-                  <select id="billpay" name="billpay" required>
-                    <option value="none">No</option>
-                    <option value="lt40">Yes &mdash; under 40 bills/month</option>
-                    <option value="40to100">Yes &mdash; 40 to 100 bills/month</option>
-                    <option value="gt100">Yes &mdash; 100+ bills/month</option>
-                  </select>
-                </div>
-              </div>
-              <div class="row-2">
-                <div class="field">
                   <label class="title" for="needs1099">Do you issue 1099s (contractors, guest speakers)?</label>
                   <select id="needs1099" name="needs1099" required>
                     <option value="no">No</option>
@@ -789,7 +778,7 @@ function getBillpayLabel(value) {
     lt40: 'Under 40 bills/month',
     '40to100': '40 to 100 bills/month',
     gt100: '100+ bills/month'
-  }[value] || 'Unknown';
+  }[value] || (value == null || value === '' ? 'Not asked' : 'Unknown');
 }
 
 function getCleanupLabel(value) {
@@ -1208,14 +1197,14 @@ function calculateEstimate(data) {
   let recommended;
   const complexOp = parseMoney(data.revenue) >= 3000000;
   const simpleOp = (
-    data.payroll === 'none' && data.billpay === 'none' && data.needs1099 !== 'yes' &&
+    data.payroll === 'none' && (data.billpay === 'none' || data.billpay == null) && data.needs1099 !== 'yes' &&
     data.restrictedFunds !== 'yes'
   );
   if (complexOp) recommended = 'strategic';
   else if (simpleOp) recommended = 'books';
   else recommended = 'reporting';
 
-  const billPayBlocksBooks = data.billpay !== 'none';
+  const billPayBlocksBooks = data.billpay != null && data.billpay !== 'none';
 
   return {
     core, floor, tiers, cleanup, flags, churchDiscount,
@@ -1341,7 +1330,7 @@ form.addEventListener('submit', (e) => {
     `Complexity: ${submissionPayload.accountCountLabel}`,
     `Restricted fund tracking: ${data.restrictedFunds === 'yes' ? 'Yes' : 'No'}`,
     `Payroll support: ${payrollLabel}`,
-    `Bill pay / AP: ${billLabel}`,
+    ...(billLabel ? [`Bill pay / AP: ${billLabel}`] : []),
     `1099 contractors: ${data.needs1099 === 'yes' ? 'Yes' : 'No'}`,
     `CFO interest: ${result.cfoInterest ? 'Yes \u2014 custom tier surfaced' : 'No'}`,
     `Add-ons attached: ${attachedAddOns.length ? attachedAddOns.join(', ') : 'None'}`,
